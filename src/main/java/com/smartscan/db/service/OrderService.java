@@ -22,5 +22,7 @@ public interface OrderService {
 
 	public List<Order> findByOwnerUsername(String username);
 
+	public List<Order> findByCheckerUsername(String username);
+
 	public List<Order> findAll();
 }

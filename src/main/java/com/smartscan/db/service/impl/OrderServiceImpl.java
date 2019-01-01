@@ -64,4 +64,9 @@ public class OrderServiceImpl implements OrderService {
 		return orderRepository.findByOwner_Username(username);
 	}
 
+	@Override
+	public List<Order> findByCheckerUsername(String username) {
+		return orderRepository.findByChecker_Username(username);
+	}
+
 }
