@@ -10,13 +10,15 @@ public class OrderDTO {
 	private Double total;
 	private Date createdDate;
 	private String description;
+	private String owner;
+	private String checker;
 
 	public OrderDTO() {
 		super();
 	}
 
 	public OrderDTO(String code, String type, String customer, String status, Double total, Date createdDate,
-			String description) {
+			String description, String owner, String checker) {
 		super();
 		this.code = code;
 		this.type = type;
@@ -25,6 +27,16 @@ public class OrderDTO {
 		this.total = total;
 		this.createdDate = createdDate;
 		this.description = description;
+		this.owner = owner;
+		this.checker = checker;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 
 	public String getDescription() {
@@ -83,10 +95,19 @@ public class OrderDTO {
 		this.createdDate = createdDate;
 	}
 
+	public String getChecker() {
+		return checker;
+	}
+
+	public void setChecker(String checker) {
+		this.checker = checker;
+	}
+
 	@Override
 	public String toString() {
 		return "OrderDTO [code=" + code + ", type=" + type + ", customer=" + customer + ", status=" + status
-				+ ", total=" + total + ", createdDate=" + createdDate + ", description=" + description + "]";
+				+ ", total=" + total + ", createdDate=" + createdDate + ", description=" + description + ", owner="
+				+ owner + ", checker=" + checker + "]";
 	}
 
 }
