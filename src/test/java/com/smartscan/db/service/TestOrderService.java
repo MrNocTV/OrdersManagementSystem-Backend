@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.smartscan.db.model.Customer;
@@ -96,7 +97,7 @@ public class TestOrderService {
 		assertTrue(customerService.findByName(customer.getName()).getOrders().contains(order));
 		customer.addOrder(order);
 		assertEquals(1, customer.getOrders().size());
-		assertEquals(1, orderService.findByOwnerUsername(owner.getUsername()).size());
+		assertEquals(1, orderService.findByOwnerUsername(owner.getUsername(), PageRequest.of(0, 10)).size());
 		assertEquals(1, orderService.findByCheckerUsername(checker.getUsername()).size());
 
 		Order order2 = ModelFactory.orderFactoryMethod(type, status, customer);
@@ -110,7 +111,7 @@ public class TestOrderService {
 		assertEquals(2, orderService.findByCustomerName(customer.getName()).size());
 		assertEquals(2, orderService.findByOrderStatusName(status.getName()).size());
 		assertEquals(2, orderService.findByOrderTypeName(type.getName()).size());
-		assertEquals(2, orderService.findByOwnerUsername(owner.getUsername()).size());
+		assertEquals(2, orderService.findByOwnerUsername(owner.getUsername(), PageRequest.of(0, 10)).size());
 		assertEquals(2, orderService.findByCheckerUsername(checker.getUsername()).size());
 
 		orderService.deleteOrder(order2);

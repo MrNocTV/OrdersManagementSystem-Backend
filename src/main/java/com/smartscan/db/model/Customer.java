@@ -1,5 +1,6 @@
 package com.smartscan.db.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,9 +13,13 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "customer")
-public class Customer {
+public class Customer implements Serializable {
+
+	private static final long serialVersionUID = 4252664059433132553L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,6 +34,7 @@ public class Customer {
 	@Column(name = "created_date")
 	private Date createdDate;
 
+	@JsonIgnore
 	@OneToMany(mappedBy = "customer")
 	private Set<Order> orders = new HashSet<>();
 

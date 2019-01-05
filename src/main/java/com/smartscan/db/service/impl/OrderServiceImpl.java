@@ -5,6 +5,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.smartscan.db.model.Order;
@@ -60,13 +61,23 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public List<Order> findByOwnerUsername(String username) {
-		return orderRepository.findByOwner_Username(username);
+	public List<Order> findByOwnerUsername(String username, Pageable pageable) {
+		return orderRepository.findByOwner_Username(username, pageable);
 	}
 
 	@Override
 	public List<Order> findByCheckerUsername(String username) {
 		return orderRepository.findByChecker_Username(username);
+	}
+
+	@Override
+	public String getNextOrderCode() {
+		return String.valueOf(1000l + (orderRepository.count() + 1));
+	}
+
+	@Override
+	public Long countByOwnerUsername(String username) {
+		return orderRepository.countByOwner_Username(username);
 	}
 
 }

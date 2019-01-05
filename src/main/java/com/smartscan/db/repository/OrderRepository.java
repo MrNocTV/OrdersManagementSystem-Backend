@@ -2,6 +2,7 @@ package com.smartscan.db.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +19,10 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
 	public List<Order> findByStatus_Name(String name);
 
-	public List<Order> findByOwner_Username(String username);
+	public List<Order> findByOwner_Username(String username, Pageable pageable);
 
 	public List<Order> findByChecker_Username(String username);
+
+	public Long countByOwner_Username(String username);
+
 }

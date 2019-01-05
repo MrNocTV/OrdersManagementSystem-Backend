@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -69,16 +70,15 @@ public class OrderAPIController {
 			}
 			String ownerName = orderDTO.getOwner();
 			User owner = userService.findByUsername(ownerName);
-			if(owner == null) {
+			if (owner == null) {
 				throw new Exception("User (owner) " + ownerName + " does not exist");
 			}
 			String checkerName = orderDTO.getChecker();
-			if(!checkerName.trim().equals("")) {
+			if (!checkerName.trim().equals("")) {
 				User checker = userService.findByUsername(checkerName);
-				if(checker == null) {
-					throw new Exception("User (checker) " + checkerName + " does not exist");
-				}
-				order.setChecker(checker);
+				if (checker != null) {
+					order.setChecker(checker);
+				}	
 			}
 
 			order.setCustomer(customer);
@@ -95,11 +95,10 @@ public class OrderAPIController {
 		}
 	}
 
-	@GetMapping(path = "/api/orders/{order_code}/users/{username")
-	public ResponseEntity<?> getOrdersOfUser(@PathVariable("order_code") String orderCode,
-			@PathVariable("username") String username) {
+	@GetMapping(path = "/api/orders/users/{username}/{page}")
+	public ResponseEntity<?> getOrdersOfUser(@PathVariable("username") String username, @PathVariable("page") Integer page) {
 		try {
-			List<Order> orderList = orderService.findByOwnerUsername(username);
+			List<Order> orderList = orderService.findByOwnerUsername(username, PageRequest.of(page, 10));
 			return new ResponseEntity<List<Order>>(orderList, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -108,4 +107,27 @@ public class OrderAPIController {
 		}
 	}
 
+	@GetMapping(path = "/api/orders/users/{username}/next_code")
+	public ResponseEntity<?> getNextCodeForOrder(@PathVariable("username") String username) {
+		try {
+			String nextCode = orderService.getNextOrderCode();
+			return new ResponseEntity<String>(nextCode, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.debug(e.getMessage());
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping(path = "/api/orders/users/{username}/count")
+	public ResponseEntity<?> countAllOrdersOfUser(@PathVariable("username") String username) {
+		try {
+			Long count = orderService.countByOwnerUsername(username);
+			return new ResponseEntity<Long>(count, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.debug(e.getMessage());
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
 }

@@ -1,5 +1,7 @@
 package com.smartscan.db.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,7 +11,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "order_status")
-public class OrderStatus {
+public class OrderStatus implements Serializable {
+
+	private static final long serialVersionUID = 1311507405199090154L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
