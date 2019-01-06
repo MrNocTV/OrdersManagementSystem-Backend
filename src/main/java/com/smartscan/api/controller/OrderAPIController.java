@@ -78,13 +78,14 @@ public class OrderAPIController {
 				User checker = userService.findByUsername(checkerName);
 				if (checker != null) {
 					order.setChecker(checker);
-				}	
+				}
 			}
 
 			order.setCustomer(customer);
 			order.setStatus(status);
 			order.setType(type);
 			order.setOwner(owner);
+			order.setTotal(0.0);
 
 			orderService.createOrder(order);
 			return new ResponseEntity<OrderDTO>(orderDTO, HttpStatus.OK);
@@ -95,8 +96,9 @@ public class OrderAPIController {
 		}
 	}
 
-	@GetMapping(path = "/api/orders/users/{username}/{page}")
-	public ResponseEntity<?> getOrdersOfUser(@PathVariable("username") String username, @PathVariable("page") Integer page) {
+	@GetMapping(path = "/api/orders/users/{username}/{page}/page")
+	public ResponseEntity<?> getOrdersOfUser(@PathVariable("username") String username,
+			@PathVariable("page") Integer page) {
 		try {
 			List<Order> orderList = orderService.findByOwnerUsername(username, PageRequest.of(page, 10));
 			return new ResponseEntity<List<Order>>(orderList, HttpStatus.OK);
@@ -118,12 +120,28 @@ public class OrderAPIController {
 			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@GetMapping(path = "/api/orders/users/{username}/count")
 	public ResponseEntity<?> countAllOrdersOfUser(@PathVariable("username") String username) {
 		try {
 			Long count = orderService.countByOwnerUsername(username);
 			return new ResponseEntity<Long>(count, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.debug(e.getMessage());
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(path = "/api/orders/users/{username}/{order_code}")
+	public ResponseEntity<?> getOrder(@PathVariable("username") String username,
+			@PathVariable("order_code") String orderCode) {
+		try {
+			Order order = orderService.findByOrderCode(orderCode);
+			if (order == null) {
+				throw new Exception("Order does not exist");
+			}
+			return new ResponseEntity<Order>(order, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.debug(e.getMessage());
