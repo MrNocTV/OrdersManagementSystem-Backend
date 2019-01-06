@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.smartscan.db.model.User;
+import com.smartscan.db.model.UserGroup;
+import com.smartscan.db.service.UserGroupService;
 import com.smartscan.db.service.UserService;
 
 @SpringBootApplication
@@ -24,6 +26,9 @@ public class SmartScanApplication implements CommandLineRunner {
 	private UserService userService;
 
 	@Autowired
+	private UserGroupService userGroupService;
+	
+	@Autowired
 	private PasswordEncoder pwEncoder;
 
 	@Override
@@ -31,7 +36,10 @@ public class SmartScanApplication implements CommandLineRunner {
 		String username = "Loc";
 		String password = "12345678";
 		password = pwEncoder.encode(password);
-		User user = new User(username, password, new Date(), null);
+		UserGroup admin = userGroupService.findByName("ADMIN");
+		User user = new User(username, password, new Date(), admin);
+		System.out.println("Creating user " + user);
+		userService.createUser(user);
 	}
 
 }
