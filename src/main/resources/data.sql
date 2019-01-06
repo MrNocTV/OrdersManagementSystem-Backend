@@ -1,0 +1,1 @@
+INSERT INTO user_group(description, name) VALUES ('ADMIN GROUP', 'ADMIN');
