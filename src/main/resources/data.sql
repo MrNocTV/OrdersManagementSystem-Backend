@@ -1,1 +1,1 @@
-INSERT INTO user_group(descrption, name) VALUES ('ADMIN GROUP', 'ADMIN');
+INSERT INTO user_group(descrption, name) VALUES (1, 'ADMIN GROUP', 'ADMIN');
