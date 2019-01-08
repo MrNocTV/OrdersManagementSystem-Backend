@@ -14,11 +14,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.smartscan.db.model.Customer;
 import com.smartscan.db.model.OrderStatus;
 import com.smartscan.db.model.OrderType;
+import com.smartscan.db.model.Unit;
 import com.smartscan.db.model.User;
 import com.smartscan.db.model.UserGroup;
 import com.smartscan.db.service.CustomerService;
 import com.smartscan.db.service.OrderStatusService;
 import com.smartscan.db.service.OrderTypeService;
+import com.smartscan.db.service.UnitService;
 import com.smartscan.db.service.UserGroupService;
 import com.smartscan.db.service.UserService;
 
@@ -49,6 +51,9 @@ public class SmartScanApplication implements CommandLineRunner {
 
 	@Autowired
 	private PasswordEncoder pwEncoder;
+	
+	@Autowired
+	private UnitService unitService;
 
 	@Override
 	public void run(String... args) throws Exception {
@@ -105,5 +110,13 @@ public class SmartScanApplication implements CommandLineRunner {
 		customer = new Customer("Thuong Vy 2", "Phuoc Thai", new Date());
 		if (customerService.findByName(customer.getName()) == null)
 			customerService.createCustomer(customer);
+		
+		Unit unit = new Unit("Bottle", "A bottle");
+		if(unitService.findByName(unit.getName()) == null)
+			unitService.createUnit(unit);
+		unit = new Unit("Can", "A bottle");
+		if(unitService.findByName(unit.getName()) == null)
+			unitService.createUnit(unit);
+		
 	}
 }
