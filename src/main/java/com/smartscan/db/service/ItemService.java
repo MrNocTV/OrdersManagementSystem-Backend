@@ -16,5 +16,7 @@ public interface ItemService {
 	public Item findByBarcode(String barcode);
 
 	public Page<Item> find10(Pageable pageable);
-
+	
+	public Long countAllItems();
+	
 }

@@ -43,4 +43,9 @@ public class ItemServiceImpl implements ItemService {
 		return itemRepository.findAll(pageable);
 	}
 
+	@Override
+	public Long countAllItems() {
+		return itemRepository.count();
+	}
+
 }

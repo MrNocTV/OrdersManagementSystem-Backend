@@ -12,9 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smartscan.db.model.Item;
@@ -23,7 +23,7 @@ import com.smartscan.db.service.ItemService;
 import com.smartscan.db.service.UnitService;
 import com.smartscan.dto.ItemDTO;
 
-@CrossOrigin(origins = { "http://localhost:4200" })
+@CrossOrigin
 @RestController
 public class ItemAPIController {
 
@@ -53,12 +53,27 @@ public class ItemAPIController {
 		}
 	}
 
-	@GetMapping(path = "/api/item/{page}")
-	public ResponseEntity<?> getOrdersOfUser(@PathVariable("page") Integer page) {
+	@GetMapping(path = "/api/items")
+	public ResponseEntity<?> getItems(@RequestParam("filter") String filter,
+			@RequestParam("sortOrder") String sortOrder, @RequestParam("pageNumber") String pageNumber,
+			@RequestParam("pageSize") String pageSize) {
 		try {
-			Page<Item> tenItems = itemService.find10(PageRequest.of(page, 10));
-			
+			Page<Item> tenItems = itemService
+					.find10(PageRequest.of(Integer.parseInt(pageNumber), Integer.parseInt(pageSize)));
+
 			return new ResponseEntity<List<Item>>(tenItems.getContent(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.debug(e.getMessage());
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(path = "api/items/count")
+	public ResponseEntity<?> countItems() {
+		try {
+			Long count = itemService.countAllItems();
+			return new ResponseEntity<Long>(count, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.debug(e.getMessage());
