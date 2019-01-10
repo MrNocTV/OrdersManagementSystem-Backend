@@ -17,7 +17,7 @@ import com.smartscan.db.model.Customer;
 import com.smartscan.db.service.CustomerService;
 import com.smartscan.dto.CustomerDTO;
 
-@CrossOrigin(origins = { "http://localhost:4200" })
+@CrossOrigin
 @RestController
 public class CustomerAPIController {
 

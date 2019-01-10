@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.smartscan.db.model.User;
 import com.smartscan.db.service.UserService;
 
-@CrossOrigin(origins = { "http://localhost:4200" })
+@CrossOrigin
 @RestController
 public class LoginController {
 

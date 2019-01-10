@@ -17,7 +17,7 @@ import com.smartscan.db.model.User;
 import com.smartscan.db.service.UserService;
 import com.smartscan.dto.UserDTO;
 
-@CrossOrigin(origins = { "http://localhost:4200" })
+@CrossOrigin
 @RestController
 public class UserAPIController {
 	private static final Logger logger = LoggerFactory.getLogger(UserAPIController.class);

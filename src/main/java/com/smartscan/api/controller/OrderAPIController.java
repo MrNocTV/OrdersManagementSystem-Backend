@@ -30,7 +30,7 @@ import com.smartscan.db.service.OrderTypeService;
 import com.smartscan.db.service.UserService;
 import com.smartscan.dto.OrderDTO;
 
-@CrossOrigin(origins = { "http://localhost:4200" })
+@CrossOrigin
 @RestController
 public class OrderAPIController {
 
