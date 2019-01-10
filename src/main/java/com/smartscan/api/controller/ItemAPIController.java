@@ -1,7 +1,10 @@
 package com.smartscan.api.controller;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +61,39 @@ public class ItemAPIController {
 			@RequestParam("sortOrder") String sortOrder, @RequestParam("pageNumber") String pageNumber,
 			@RequestParam("pageSize") String pageSize) {
 		try {
-			Page<Item> tenItems = itemService
+			System.out.println("Filter " + filter);
+			// page
+			Page<Item> itemPage = itemService
 					.find10(PageRequest.of(Integer.parseInt(pageNumber), Integer.parseInt(pageSize)));
+			List<Item> itemList = new ArrayList<>(itemPage.getContent());
+			// filter
+			if (!filter.equals("")) {
+				String lowerCase = filter.toLowerCase();
+				itemList = itemList.stream().filter(item -> {
+					return item.getBarcode().toLowerCase().contains(lowerCase)
+							|| item.getDescription().toLowerCase().contains(lowerCase)
+							|| item.getPriceIn().toString().contains(lowerCase)
+							|| item.getPriceOut().toString().contains(lowerCase)
+							|| item.getInStock().toString().contains(lowerCase);
+				}).collect(Collectors.toList());
+			}
 
-			return new ResponseEntity<List<Item>>(tenItems.getContent(), HttpStatus.OK);
+			// sort
+			if (sortOrder.equals("") || sortOrder.equals("desc")) {
+				itemList.sort(new Comparator<Item>() {
+					public int compare(Item i1, Item i2) {
+						return i2.getId().compareTo(i1.getId());
+					}
+				});
+			} else {
+				itemList.sort(new Comparator<Item>() {
+					public int compare(Item i1, Item i2) {
+						return i1.getId().compareTo(i2.getId());
+					}
+				});
+			}
+
+			return new ResponseEntity<List<Item>>(itemList, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.debug(e.getMessage());

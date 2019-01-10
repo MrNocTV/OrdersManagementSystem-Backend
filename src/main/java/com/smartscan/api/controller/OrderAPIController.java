@@ -1,6 +1,8 @@
 package com.smartscan.api.controller;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smartscan.db.model.Customer;
@@ -96,11 +99,39 @@ public class OrderAPIController {
 		}
 	}
 
-	@GetMapping(path = "/api/orders/users/{username}/{page}/page")
+	@GetMapping(path = "/api/orders/users/{username}")
 	public ResponseEntity<?> getOrdersOfUser(@PathVariable("username") String username,
-			@PathVariable("page") Integer page) {
+			@RequestParam("filter") String filter, @RequestParam("sortOrder") String sortOrder,
+			@RequestParam("pageNumber") String pageNumber, @RequestParam("pageSize") String pageSize) {
 		try {
-			List<Order> orderList = orderService.findByOwnerUsername(username, PageRequest.of(page, 10));
+			List<Order> orderList = orderService.findByOwnerUsername(username,
+					PageRequest.of(Integer.parseInt(pageNumber), Integer.parseInt(pageSize)));
+			if (!filter.equals("")) {
+				String lowerCase = filter.toLowerCase();
+				orderList = orderList.stream().filter(order -> {
+					return order.getOrderCode().toLowerCase().contains(lowerCase)
+							|| order.getCustomer().getName().toLowerCase().contains(lowerCase)
+							|| order.getType().getName().toLowerCase().contains(lowerCase)
+							|| order.getStatus().getName().toLowerCase().contains(lowerCase);
+				}).collect(Collectors.toList());
+			}
+
+			if (sortOrder.equals("") || sortOrder.equals("asc")) {
+				orderList.sort(new Comparator<Order>() {
+					@Override
+					public int compare(Order o1, Order o2) {
+						return o1.getId().compareTo(o2.getId());
+					}
+				});
+			} else {
+				orderList.sort(new Comparator<Order>() {
+					@Override
+					public int compare(Order o1, Order o2) {
+						return o2.getId().compareTo(o1.getId());
+					}
+				});
+			}
+			System.out.println("search " + filter);
 			return new ResponseEntity<List<Order>>(orderList, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
