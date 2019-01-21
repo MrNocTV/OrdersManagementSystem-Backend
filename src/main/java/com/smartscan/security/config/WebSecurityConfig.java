@@ -27,6 +27,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable().authorizeRequests()
 				// allow prefly request
 				.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.antMatchers("/api/items/image/get/**").permitAll()
 				.antMatchers("/basicauth/**").permitAll().anyRequest().authenticated().and().httpBasic();
 	}
 

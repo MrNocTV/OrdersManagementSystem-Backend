@@ -1,5 +1,7 @@
 package com.smartscan.dto;
 
+import com.smartscan.db.model.Item;
+
 public class ItemDTO {
 	private String barcode;
 	private String description;
@@ -7,12 +9,14 @@ public class ItemDTO {
 	private Double priceIn;
 	private Double priceOut;
 	private String unit;
+	private String imagePath;
 
 	public ItemDTO() {
 		super();
 	}
 
-	public ItemDTO(String barcode, String description, Integer inStock, Double priceIn, Double priceOut, String unit) {
+	public ItemDTO(String barcode, String description, Integer inStock, Double priceIn, Double priceOut, String unit,
+			String imagePath) {
 		super();
 		this.barcode = barcode;
 		this.description = description;
@@ -20,6 +24,20 @@ public class ItemDTO {
 		this.priceIn = priceIn;
 		this.priceOut = priceOut;
 		this.unit = unit;
+		this.imagePath = imagePath;
+	}
+
+	public ItemDTO(Item item) {
+		this(item.getBarcode(), item.getDescription(), item.getInStock(), item.getPriceIn(), item.getPriceOut(),
+				item.getUnit().getName(), item.getImagePath());
+	}
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
 	}
 
 	public String getBarcode() {
