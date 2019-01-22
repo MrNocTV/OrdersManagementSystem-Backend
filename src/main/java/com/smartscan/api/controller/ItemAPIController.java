@@ -4,11 +4,13 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -52,7 +54,6 @@ public class ItemAPIController {
 	@Autowired
 	private UnitService unitService;
 
-	private final Path rootLocation = Paths.get("src/main/resources/item_image");
 	private static final int IMG_WIDTH = 337;
 	private static final int IMG_HEIGHT = 168;
 
@@ -81,22 +82,27 @@ public class ItemAPIController {
 		try {
 			System.out.println("File " + file.getOriginalFilename());
 			System.out.println("barcode " + barcode);
-			String extension = file.getOriginalFilename().split("\\.")[1];
+			String[] split = file.getOriginalFilename().split("\\.");
+			String extension = split[split.length - 1];
 			String imagePath = barcode + "." + extension;
-			System.out.println("image path " + imagePath);
+			System.out.println("Image path " + imagePath);
+			URL itemImageFolder = ItemAPIController.class.getClassLoader().getResource("item_image/");
+			System.out.println("===== itemImageFolder: " + itemImageFolder.getPath() + imagePath);
+			Path rootLocation = Paths.get(itemImageFolder.getPath());
 			if (Files.notExists(rootLocation)) {
 				Files.createDirectories(rootLocation);
 			}
-			Files.copy(file.getInputStream(), Paths.get("src/main/resources/item_image/" + imagePath),
+			Files.copy(file.getInputStream(), Paths.get(itemImageFolder.getPath() + imagePath),
 					StandardCopyOption.REPLACE_EXISTING);
 			// create thumbs nail
-			BufferedImage originalImage = ImageIO.read(new File("src/main/resources/item_image/" + imagePath));
+			BufferedImage originalImage = ImageIO.read(new File(itemImageFolder.getPath() + imagePath));
 			int type = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
 			BufferedImage resizeImageJpg = resizeImage(originalImage, type);
-			logger.info(
-					"Thumps nail created " + "src/main/resources/item_image/" + barcode + "_thumbsnail." + extension);
+			System.out.println(
+					"====== Thumps nail created " + itemImageFolder.getPath() + barcode + "_thumbsnail." + extension);
+
 			ImageIO.write(resizeImageJpg, extension,
-					new File("src/main/resources/item_image/" + barcode + "_thumbsnail." + extension));
+					new File(itemImageFolder.getPath() + barcode + "_thumbsnail." + extension));
 			return new ResponseEntity<String>("OK", HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -109,7 +115,9 @@ public class ItemAPIController {
 	public ResponseEntity<InputStreamResource> getItemImage(@PathVariable("file_name") String fileName) {
 		// append "_thumbsnail" to file name
 		fileName = fileName.split("\\.")[0] + "_thumbsnail." + fileName.split("\\.")[1];
-		InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("item_image/" + fileName);
+		System.out.println("====== READING RESOURCE " +ItemAPIController.class.getClassLoader().getResource("item_image/").getPath() + fileName);
+		InputStream resourceAsStream = ItemAPIController.class.getClassLoader().getResourceAsStream("item_image/" + fileName);
+
 		// ClassPathResource imgFile = new ClassPathResource("item_image/" + fileName,
 		// getClass().getClassLoader());
 		try {
