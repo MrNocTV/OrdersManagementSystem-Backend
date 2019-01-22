@@ -86,7 +86,7 @@ public class ItemAPIController {
 			String extension = split[split.length - 1];
 			String imagePath = barcode + "." + extension;
 			System.out.println("Image path " + imagePath);
-			URL itemImageFolder = ItemAPIController.class.getClassLoader().getResource("item_image/");
+			URL itemImageFolder = getClass().getClassLoader().getResource("item_image/");
 			System.out.println("===== itemImageFolder: " + itemImageFolder.getPath() + imagePath);
 			Path rootLocation = Paths.get(itemImageFolder.getPath());
 			if (Files.notExists(rootLocation)) {
@@ -115,8 +115,8 @@ public class ItemAPIController {
 	public ResponseEntity<InputStreamResource> getItemImage(@PathVariable("file_name") String fileName) {
 		// append "_thumbsnail" to file name
 		fileName = fileName.split("\\.")[0] + "_thumbsnail." + fileName.split("\\.")[1];
-		System.out.println("====== READING RESOURCE " +ItemAPIController.class.getClassLoader().getResource("item_image/").getPath() + fileName);
-		InputStream resourceAsStream = ItemAPIController.class.getClassLoader().getResourceAsStream("item_image/" + fileName);
+		System.out.println("====== READING RESOURCE " + getClass().getClassLoader().getResource("item_image/").getPath() + fileName);
+		InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("item_image/" + fileName);
 
 		// ClassPathResource imgFile = new ClassPathResource("item_image/" + fileName,
 		// getClass().getClassLoader());
