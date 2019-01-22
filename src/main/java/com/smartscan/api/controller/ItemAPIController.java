@@ -3,7 +3,6 @@ package com.smartscan.api.controller;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,7 +19,6 @@ import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -111,11 +109,12 @@ public class ItemAPIController {
 	public ResponseEntity<InputStreamResource> getItemImage(@PathVariable("file_name") String fileName) {
 		// append "_thumbsnail" to file name
 		fileName = fileName.split("\\.")[0] + "_thumbsnail." + fileName.split("\\.")[1];
-		ClassPathResource imgFile = new ClassPathResource("item_image/" + fileName, getClass().getClassLoader());
+		InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("item_image/" + fileName);
+		// ClassPathResource imgFile = new ClassPathResource("item_image/" + fileName,
+		// getClass().getClassLoader());
 		try {
-			return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG)
-					.body(new InputStreamResource(imgFile.getInputStream()));
-		} catch (IOException e) {
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(new InputStreamResource(resourceAsStream));
+		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.badRequest().body(null);
 		}
