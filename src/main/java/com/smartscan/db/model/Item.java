@@ -43,9 +43,6 @@ public class Item implements Serializable {
 	@Column(name = "last_modified_date")
 	private Date lastModifiedDate;
 
-	@Column(name = "image_path")
-	private String imagePath;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_id")
 	private Unit unit;
@@ -55,7 +52,7 @@ public class Item implements Serializable {
 	}
 
 	public Item(String barcode, String description, Integer inStock, Double priceIn, Date createdDate,
-			Date lastModifiedDate, Unit unit, Double priceOut, String imagePath) {
+			Date lastModifiedDate, Unit unit, Double priceOut) {
 		super();
 		this.barcode = barcode;
 		this.description = description;
@@ -65,15 +62,6 @@ public class Item implements Serializable {
 		this.lastModifiedDate = lastModifiedDate;
 		this.unit = unit;
 		this.priceOut = priceOut;
-		this.imagePath = imagePath;
-	}
-
-	public String getImagePath() {
-		return imagePath;
-	}
-
-	public void setImagePath(String imagePath) {
-		this.imagePath = imagePath;
 	}
 
 	public Double getPriceOut() {

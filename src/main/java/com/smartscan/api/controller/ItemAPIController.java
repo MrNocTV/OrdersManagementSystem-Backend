@@ -2,15 +2,10 @@ package com.smartscan.api.controller;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.smartscan.db.model.Item;
+import com.smartscan.db.model.ItemImage;
 import com.smartscan.db.model.Unit;
+import com.smartscan.db.service.ItemImageService;
 import com.smartscan.db.service.ItemService;
 import com.smartscan.db.service.UnitService;
 import com.smartscan.dto.ItemDTO;
@@ -54,7 +52,10 @@ public class ItemAPIController {
 	@Autowired
 	private UnitService unitService;
 
-	private static final int IMG_WIDTH = 337;
+	@Autowired
+	private ItemImageService itemImageService;
+
+	private static final int IMG_WIDTH = 302;
 	private static final int IMG_HEIGHT = 168;
 
 	@PostMapping(path = "/api/items")
@@ -62,7 +63,7 @@ public class ItemAPIController {
 		try {
 			Unit unit = unitService.findByName(itemDTO.getUnit());
 			Item item = new Item(itemDTO.getBarcode(), itemDTO.getDescription(), itemDTO.getInStock(),
-					itemDTO.getPriceIn(), new Date(), new Date(), unit, itemDTO.getPriceOut(), itemDTO.getImagePath());
+					itemDTO.getPriceIn(), new Date(), new Date(), unit, itemDTO.getPriceOut());
 			if (itemService.findByBarcode(item.getBarcode()) != null) {
 				throw new Exception("Duplicated item");
 			}
@@ -77,32 +78,17 @@ public class ItemAPIController {
 	}
 
 	@PostMapping(path = "/api/items/image")
-	public ResponseEntity<?> addItemImage(@RequestParam("file") MultipartFile file,
+	public ResponseEntity<?> addItemImage(@RequestParam("uploads[]") MultipartFile[] files,
 			@RequestParam("barcode") String barcode) {
 		try {
-			System.out.println("File " + file.getOriginalFilename());
-			System.out.println("barcode " + barcode);
-			String[] split = file.getOriginalFilename().split("\\.");
-			String extension = split[split.length - 1];
-			String imagePath = barcode + "." + extension;
-			System.out.println("Image path " + imagePath);
-			URL itemImageFolder = getClass().getClassLoader().getResource("item_image/");
-			System.out.println("===== itemImageFolder: " + itemImageFolder.getPath() + imagePath);
-			Path rootLocation = Paths.get(itemImageFolder.getPath());
-			if (Files.notExists(rootLocation)) {
-				Files.createDirectories(rootLocation);
+			System.out.println("[====== length " + files.length);
+			for (int i = 0; i < files.length; ++i) {
+				byte[] imageInBytes = files[i].getBytes();
+				String extension = FilenameUtils.getExtension(files[i].getOriginalFilename());
+				String fileName = barcode + "_" + i + "." + extension;
+				ItemImage itemImage = new ItemImage(imageInBytes, barcode, fileName);
+				itemImageService.createItemImage(itemImage);
 			}
-			Files.copy(file.getInputStream(), Paths.get(itemImageFolder.getPath() + imagePath),
-					StandardCopyOption.REPLACE_EXISTING);
-			// create thumbs nail
-			BufferedImage originalImage = ImageIO.read(new File(itemImageFolder.getPath() + imagePath));
-			int type = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
-			BufferedImage resizeImageJpg = resizeImage(originalImage, type);
-			System.out.println(
-					"====== Thumps nail created " + itemImageFolder.getPath() + barcode + "_thumbsnail." + extension);
-
-			ImageIO.write(resizeImageJpg, extension,
-					new File(itemImageFolder.getPath() + barcode + "_thumbsnail." + extension));
 			return new ResponseEntity<String>("OK", HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -111,17 +97,38 @@ public class ItemAPIController {
 		}
 	}
 
+	@GetMapping(path = "/api/items/images/{barcode}")
+	public ResponseEntity<?> getImageFileNameOfItem(@PathVariable String barcode) {
+		try {
+			List<ItemImage> itemImages = itemImageService.findByBarcode(barcode);
+			List<String> itemImageFileNames = itemImages.stream().map(ItemImage::getFileName).collect(Collectors.toList());
+			if (itemImages.size() > 0)
+				return new ResponseEntity<>(Collections.singletonMap("fileNames", itemImageFileNames),
+						HttpStatus.OK);
+			return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(null);
+		}
+	}
+
 	@GetMapping(path = "/api/items/image/get/{file_name}")
 	public ResponseEntity<InputStreamResource> getItemImage(@PathVariable("file_name") String fileName) {
-		// append "_thumbsnail" to file name
-		fileName = fileName.split("\\.")[0] + "_thumbsnail." + fileName.split("\\.")[1];
-		System.out.println("====== READING RESOURCE " + getClass().getClassLoader().getResource("item_image/").getPath() + fileName);
-		InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("item_image/" + fileName);
-
-		// ClassPathResource imgFile = new ClassPathResource("item_image/" + fileName,
-		// getClass().getClassLoader());
 		try {
-			return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(new InputStreamResource(resourceAsStream));
+			String barcode = fileName.split("\\.")[0];
+			String extn = FilenameUtils.getExtension(fileName);
+			barcode = barcode.split("_")[0];
+			ItemImage itemImage = itemImageService.findByBarcodeAndFileName(barcode, fileName);
+			BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(itemImage.getImage()));
+			int type = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
+			BufferedImage thumbnail = resizeImage(originalImage, type);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(thumbnail, extn, baos);
+			baos.flush();
+			byte[] thumbnailInByte = baos.toByteArray();
+
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG)
+					.body(new InputStreamResource(new ByteArrayInputStream(thumbnailInByte)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.badRequest().body(null);
@@ -159,6 +166,7 @@ public class ItemAPIController {
 				});
 			} else {
 				itemList.sort(new Comparator<Item>() {
+
 					public int compare(Item i1, Item i2) {
 						return i2.getId().compareTo(i1.getId());
 					}
@@ -167,7 +175,9 @@ public class ItemAPIController {
 
 			return new ResponseEntity<List<ItemDTO>>(itemList.stream().map(ItemDTO::new).collect(Collectors.toList()),
 					HttpStatus.OK);
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			e.printStackTrace();
 			logger.debug(e.getMessage());
 			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
