@@ -76,6 +76,29 @@ public class ItemAPIController {
 			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	@PostMapping(path="/api/items/update")
+	public ResponseEntity<?> updateItem(@RequestBody ItemDTO itemDTO) {
+		try {
+			Unit unit = unitService.findByName(itemDTO.getUnit());
+			Item item = itemService.findByBarcode(itemDTO.getBarcode());
+			if(item == null) {
+				return new ResponseEntity<String>("[BAD REQUEST] = Item does not exist", HttpStatus.NOT_FOUND);
+			}
+			item.setDescription(itemDTO.getDescription());
+			item.setInStock(itemDTO.getInStock());
+			item.setPriceIn(itemDTO.getPriceIn());
+			item.setPriceOut(itemDTO.getPriceOut());
+			item.setUnit(unit);
+			item.setLastModifiedDate(new Date());
+			itemService.updateItem(item);
+			return new ResponseEntity<Item>(item, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.debug(e.getMessage());
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
 
 	@PostMapping(path = "/api/items/image")
 	public ResponseEntity<?> addItemImage(@RequestParam("uploads[]") MultipartFile[] files,
