@@ -61,7 +61,11 @@ public class ItemAPIController {
 	@PostMapping(path = "/api/items")
 	public ResponseEntity<?> addItem(@RequestBody ItemDTO itemDTO) {
 		try {
-			Unit unit = unitService.findByName(itemDTO.getUnit());
+			Unit unit = unitService.findByName(itemDTO.getUnit().trim());
+			if (unit == null && !itemDTO.getUnit().trim().equals("")) {
+				unit = new Unit(itemDTO.getUnit().trim(), "");
+				unitService.createUnit(unit);
+			}
 			Item item = new Item(itemDTO.getBarcode(), itemDTO.getDescription(), itemDTO.getInStock(),
 					itemDTO.getPriceIn(), new Date(), new Date(), unit, itemDTO.getPriceOut());
 			if (itemService.findByBarcode(item.getBarcode()) != null) {
@@ -76,13 +80,13 @@ public class ItemAPIController {
 			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	@PostMapping(path="/api/items/update")
+
+	@PostMapping(path = "/api/items/update")
 	public ResponseEntity<?> updateItem(@RequestBody ItemDTO itemDTO) {
 		try {
 			Unit unit = unitService.findByName(itemDTO.getUnit());
 			Item item = itemService.findByBarcode(itemDTO.getBarcode());
-			if(item == null) {
+			if (item == null) {
 				return new ResponseEntity<String>("[BAD REQUEST] = Item does not exist", HttpStatus.NOT_FOUND);
 			}
 			item.setDescription(itemDTO.getDescription());
@@ -124,10 +128,10 @@ public class ItemAPIController {
 	public ResponseEntity<?> getImageFileNameOfItem(@PathVariable String barcode) {
 		try {
 			List<ItemImage> itemImages = itemImageService.findByBarcode(barcode);
-			List<String> itemImageFileNames = itemImages.stream().map(ItemImage::getFileName).collect(Collectors.toList());
+			List<String> itemImageFileNames = itemImages.stream().map(ItemImage::getFileName)
+					.collect(Collectors.toList());
 			if (itemImages.size() > 0)
-				return new ResponseEntity<>(Collections.singletonMap("fileNames", itemImageFileNames),
-						HttpStatus.OK);
+				return new ResponseEntity<>(Collections.singletonMap("fileNames", itemImageFileNames), HttpStatus.OK);
 			return new ResponseEntity<String>("", HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -155,6 +159,21 @@ public class ItemAPIController {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.badRequest().body(null);
+		}
+	}
+
+	@GetMapping(path = "/api/items/get/{barcode}")
+	public ResponseEntity<?> getItem(@PathVariable String barcode) {
+		try {
+			Item item = itemService.findByBarcode(barcode);
+			if (item == null) {
+				throw new Exception("Item " + barcode + " does not exist");
+			}
+			ItemDTO itemDTO = new ItemDTO(item);
+			return new ResponseEntity<ItemDTO>(itemDTO, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 

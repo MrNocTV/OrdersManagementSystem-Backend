@@ -22,7 +22,7 @@ public class Item implements Serializable {
 	@GeneratedValue
 	private Integer id;
 
-	@Column(name = "barcode", unique = true)
+	@Column(name = "barcode", unique = true, length = 25)
 	private String barcode;
 
 	@Column(name = "description")

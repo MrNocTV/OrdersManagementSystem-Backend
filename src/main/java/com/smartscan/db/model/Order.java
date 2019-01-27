@@ -22,7 +22,7 @@ public class Order implements Serializable {
 	@GeneratedValue
 	private Integer id;
 
-	@Column(name = "order_code", unique = true)
+	@Column(name = "order_code", unique = true, length = 25)
 	private String orderCode;
 
 	@Column(name = "total")
