@@ -17,7 +17,7 @@ import com.smartscan.db.model.OrderType;
 import com.smartscan.db.service.OrderTypeService;
 import com.smartscan.dto.OrderTypeDTO;
 
-@CrossOrigin(origins = { "http://localhost:4200" })
+@CrossOrigin
 @RestController
 public class OrderTypeAPIController {
 
