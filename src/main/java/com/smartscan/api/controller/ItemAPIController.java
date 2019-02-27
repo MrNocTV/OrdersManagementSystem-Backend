@@ -217,9 +217,7 @@ public class ItemAPIController {
 
 			return new ResponseEntity<List<ItemDTO>>(itemList.stream().map(ItemDTO::new).collect(Collectors.toList()),
 					HttpStatus.OK);
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			logger.debug(e.getMessage());
 			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);

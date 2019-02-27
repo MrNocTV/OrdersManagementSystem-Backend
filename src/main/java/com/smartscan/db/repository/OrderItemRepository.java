@@ -12,5 +12,6 @@ import com.smartscan.db.model.OrderItemId;
 public interface OrderItemRepository extends JpaRepository<OrderItem, OrderItemId> {
 
 	public List<OrderItem> findById_OrderCode(String orderCode);
-
+	
+	public OrderItem findById_OrderCodeAndId_Barcode(String orderCode, String barcode);
 }

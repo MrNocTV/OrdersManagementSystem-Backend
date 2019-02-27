@@ -22,6 +22,9 @@ public class OrderItem {
 	@Column(name = "price")
 	private Double price;
 
+	@Column(name = "checked", nullable = false)
+	private Boolean checked = false;
+
 	public OrderItem(Order order, Item item, Integer quantity, Double price) {
 		this.id = new OrderItemId(order.getOrderCode(), item.getBarcode());
 		this.quantity = quantity;
@@ -56,6 +59,14 @@ public class OrderItem {
 		this.price = price;
 	}
 
+	public void setChecked(Boolean checked) {
+		this.checked = checked;
+	}
+
+	public Boolean getChecked() {
+		return checked;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -73,7 +84,7 @@ public class OrderItem {
 
 	@Override
 	public String toString() {
-		return "OrderItem [id=" + id + ", quantity=" + quantity + ", price=" + price + "]";
+		return "OrderItem [quantity=" + quantity + ", price=" + price + ", checked=" + checked + "]";
 	}
 
 }

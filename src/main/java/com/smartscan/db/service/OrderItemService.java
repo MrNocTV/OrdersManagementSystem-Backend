@@ -16,4 +16,6 @@ public interface OrderItemService {
 	public OrderItem findByOrderItemId(OrderItemId orderItemId);
 
 	public List<OrderItem> findByOrderCode(String orderCode);
+
+	public OrderItem findByOrderCodeAndBarcode(String orderCode, String barcode);
 }

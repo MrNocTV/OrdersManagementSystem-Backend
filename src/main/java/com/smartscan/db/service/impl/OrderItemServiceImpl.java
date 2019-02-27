@@ -44,4 +44,9 @@ public class OrderItemServiceImpl implements OrderItemService {
 		return orderItemRepository.findById_OrderCode(orderCode);
 	}
 
+	@Override
+	public OrderItem findByOrderCodeAndBarcode(String orderCode, String barcode) {
+		return orderItemRepository.findById_OrderCodeAndId_Barcode(orderCode, barcode);
+	}
+
 }

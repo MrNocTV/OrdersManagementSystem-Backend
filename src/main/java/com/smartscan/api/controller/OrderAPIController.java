@@ -114,6 +114,7 @@ public class OrderAPIController {
 	@PostMapping(path = "api/orders/update")
 	public ResponseEntity<?> updateOrder(@RequestBody OrderDTO orderDTO) {
 		try {
+			System.out.println("DTO " + orderDTO);
 			Order order = orderService.findByOrderCode(orderDTO.getCode());
 			if (order == null) {
 				throw new Exception("Order " + orderDTO.getCode() + " does not exist");
@@ -240,13 +241,37 @@ public class OrderAPIController {
 		}
 	}
 
+	@GetMapping(path = "/api/orders/{order_code}/removeItem/{barcode}")
+	public ResponseEntity<?> removeItem(@PathVariable("order_code") final String orderCode,
+			@PathVariable("barcode") final String barcode) {
+		try {
+			OrderItem orderItem = orderItemService.findByOrderCodeAndBarcode(orderCode, barcode);
+			if (orderItem != null) {
+				// increase instock of item
+				Item item = itemService.findByBarcode(orderItem.getId().getBarcode());
+				item.setInStock(item.getInStock() + orderItem.getQuantity());
+				itemService.updateItem(item);
+
+				// delete item from order
+				orderItemService.deleteOrderItem(orderItem);
+
+				return ResponseEntity.ok(orderItem);
+			} else
+				throw new Exception("OrderItem does not exist");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
 	@GetMapping(path = "/api/orders/{order_code}/getItems")
 	public ResponseEntity<?> getItem(@PathVariable("order_code") final String orderCode) {
 		try {
 			List<OrderItem> orderItems = orderItemService.findByOrderCode(orderCode);
 			List<OrderItemDTO> orderItemDTOs = orderItems.stream().map(e -> {
 				OrderItemDTO orderItemDTO = new OrderItemDTO(e.getId().getOrderCode(), e.getId().getBarcode(),
-						e.getQuantity(), e.getPrice());
+						e.getQuantity(), e.getPrice(), e.getChecked());
 				Item item = itemService.findByBarcode(e.getId().getBarcode());
 				orderItemDTO.setDescription(item.getDescription());
 				orderItemDTO.setUnit(item.getUnit().getName());
@@ -254,6 +279,26 @@ public class OrderAPIController {
 			}).collect(Collectors.toList());
 
 			return new ResponseEntity<>(Collections.singletonMap("orderItems", orderItemDTOs), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping(path = "/api/orders/{order_code}/checkItem/{barcode}")
+	public ResponseEntity<?> checkItem(@PathVariable("order_code") final String orderCode,
+			@PathVariable("barcode") final String barcode) {
+		try {
+			OrderItem orderItem = orderItemService.findByOrderCodeAndBarcode(orderCode, barcode);
+			if (orderItem == null) {
+				throw new Exception("OrderItem does not exist");
+			}
+			orderItem.setChecked(true);
+			orderItemService.updateOrderItem(orderItem);
+			OrderItemDTO orderItemDTO = new OrderItemDTO(orderItem.getId().getOrderCode(),
+					orderItem.getId().getBarcode(), orderItem.getQuantity(), orderItem.getPrice(),
+					orderItem.getChecked());
+			return new ResponseEntity<OrderItemDTO>(orderItemDTO, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<String>("[BAD REQUEST] = " + e.getMessage(), HttpStatus.BAD_REQUEST);

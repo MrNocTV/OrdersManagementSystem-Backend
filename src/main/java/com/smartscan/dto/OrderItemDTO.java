@@ -8,17 +8,27 @@ public class OrderItemDTO {
 	private Double price;
 	private String description;
 	private String unit;
+	private boolean checked;
 
 	public OrderItemDTO() {
 		super();
 	}
 
-	public OrderItemDTO(String orderCode, String barcode, Integer quantity, Double price) {
+	public OrderItemDTO(String orderCode, String barcode, Integer quantity, Double price, boolean checked) {
 		super();
 		this.orderCode = orderCode;
 		this.barcode = barcode;
 		this.quantity = quantity;
 		this.price = price;
+		this.checked = checked;
+	}
+	
+	public void setChecked(boolean checked) {
+		this.checked = checked;
+	}
+	
+	public boolean getChecked() {
+		return checked;
 	}
 
 	public String getDescription() {
